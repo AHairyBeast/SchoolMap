@@ -1,18 +1,39 @@
-# Package source URL: http://cran.r-project.org/web/packages/ggmap/ggmap.pdf
-# Data source URL: http://www.geo.ut.ee/aasa/LOOM02331/heatmap_in_R.html
+#setwd("/Users/ericgartner/downloads")
 
-# install.packages("ggmap")
+# http://rss.dice.com/indeed/
+library(xml2)
+library(maps)
+library(dplyr)
+library(stringr)
+library(highcharter)
+library(plyr)
+require("ggmap")
+library(viridisLite)
+library(grid)
 library(ggmap)
+library(maptools)
 
-# load the data
-tartu_housing <- read.csv("data/tartu_housing_xy_wgs84_a.csv", sep = ";")
+SchoolCoordinates <- getKMLcoordinates("data/APS_Schools.kml", ignoreAltitude=TRUE)
+dfPoints <- data.frame(
+  long = SchoolCoordinates[[1]][,1],
+  lat = SchoolCoordinates[[1]][,2]
+)
+dat.pts <- data.frame(x = dfPoints$long, y = dfPoints$lat)
+map <- get_googlemap(
+  "Albuquerque" # google search string
+  , zoom = 12 # larger is closer
+  , maptype = "roadmap" # map type
+  #, markers = dat.pts # markers for map
+  , path = dfPoints # path, in order of points
+  , scale = 2
+)
 
-# Download the base map
-tartu_map_g_str <- get_map(location = "tartu", zoom = 13)
-#tartu_map_g_str <- get_map(location = "Albuquerque", zoom = 11)
-# Draw the heat map
-ggmap(tartu_map_g_str, extent = "device") + geom_density2d(data = tartu_housing, aes(x = lon, y = lat), size = 0.3) + 
-  stat_density2d(data = tartu_housing, 
-                 aes(x = lon, y = lat, fill = ..level.., alpha = ..level..), size = 0.01, 
-                 bins = 16, geom = "polygon") + scale_fill_gradient(low = "green", high = "red") + 
-  scale_alpha(range = c(0, 0.3), guide = FALSE)
+p <- ggmap(map
+           , path = dat.pts # path, in order of points
+           , extent = "device" # remove white border around map
+           , darken = 0.2 # darken map layer to help points stand out
+)
+#p <- p + geom_text(data = dat, aes(x = long, y = lat, label = location)
+#                   , hjust = -0.2, colour = "white", size = 6)
+p <- p + labs(title = "Energy Use per Student by School")
+print(p)

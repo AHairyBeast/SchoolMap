@@ -1,15 +1,5 @@
-#setwd("/Users/ericgartner/downloads")
-
-# http://rss.dice.com/indeed/
-library(xml2)
-library(maps)
-library(dplyr)
-library(stringr)
 library(highcharter)
 library(plyr)
-require("ggmap")
-library(viridisLite)
-library(grid)
 library(ggmap)
 library(maptools)
 
